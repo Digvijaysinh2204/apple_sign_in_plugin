@@ -1,19 +1,28 @@
 import 'dart:convert';
+import 'dart:developer';
 
+import 'package:flutter/foundation.dart';
 import 'package:flutter/services.dart';
 import 'package:get_storage/get_storage.dart';
 import 'package:http/http.dart' as http;
 import 'package:jose/jose.dart';
 import 'package:sign_in_with_apple/sign_in_with_apple.dart';
 
+/// A plugin for handling Apple Sign-In functionality.
 class AppleSignInPlugin {
   static String? _pemKeyPath;
   static String? _keyId;
   static String? _teamId;
   static String? _clientId;
 
-  static final _storage = GetStorage();
+  static final _storage = GetStorage('AppleSignInPlugin');
 
+  /// Initializes the AppleSignInPlugin with necessary parameters.
+  ///
+  /// [pemKeyPath] - Path to the PEM key file.
+  /// [keyId] - The key identifier.
+  /// [teamId] - The team identifier.
+  /// [clientId] - The client identifier.
   static Future<void> initialize({
     required String pemKeyPath,
     required String keyId,
@@ -24,15 +33,20 @@ class AppleSignInPlugin {
     _keyId = keyId;
     _teamId = teamId;
     _clientId = clientId;
-    await GetStorage.init();
+    await GetStorage.init('AppleSignInPlugin');
   }
 
   static const tokenUrl = 'https://appleid.apple.com/auth/token';
   static const revokeUrl = 'https://appleid.apple.com/auth/revoke';
+
+  /// Loads the PEM key content from the specified path.
   static Future<String> _loadPemKey() async {
     return await rootBundle.loadString(_pemKeyPath!);
   }
 
+  /// Generates a client secret for Apple authentication.
+  ///
+  /// [validDuration] - The duration for which the client secret is valid, in seconds.
   static Future<String> _generateClientSecret(int validDuration) async {
     final pemKeyContent = await _loadPemKey();
     final jwk = JsonWebKey.fromPem(pemKeyContent, keyId: _keyId!);
@@ -53,6 +67,9 @@ class AppleSignInPlugin {
     return builder.build().toCompactSerialization();
   }
 
+  /// Retrieves tokens using the provided authorization code.
+  ///
+  /// [authorizationCode] - The authorization code obtained from Apple Sign-In.
   static Future<Map<String, dynamic>> _getTokens(
       String authorizationCode) async {
     final clientSecret = await _generateClientSecret(300);
@@ -72,11 +89,18 @@ class AppleSignInPlugin {
     if (response.statusCode == 200) {
       return Map<String, dynamic>.from(json.decode(response.body));
     } else {
+      kLog(
+          content:
+              'Failed to get tokens: ${response.statusCode} ${response.reasonPhrase}',
+          title: 'Error');
       throw Exception(
           'Failed to get tokens: ${response.statusCode} ${response.reasonPhrase}');
     }
   }
 
+  /// Revokes the Apple refresh token.
+  ///
+  /// [refreshToken] - The refresh token to be revoked.
   static Future<void> _revokeAppleToken(String refreshToken) async {
     final clientSecret = await _generateClientSecret(300);
 
@@ -94,15 +118,18 @@ class AppleSignInPlugin {
     );
 
     if (response.statusCode == 200) {
-      print('Token revoked successfully');
+      kLog(content: 'Token revoked successfully', title: 'Info');
       _storage.erase();
     } else {
-      print(
-          'Failed to revoke token: ${response.statusCode} ${response.reasonPhrase}');
-      print('Response body: ${response.body}');
+      kLog(
+          content:
+              'Failed to revoke token: ${response.statusCode} ${response.reasonPhrase}',
+          title: 'Error');
+      kLog(content: 'Response body: ${response.body}', title: 'Error');
     }
   }
 
+  /// Signs in the user with Apple and returns the [AuthorizationCredentialAppleID].
   static Future<AuthorizationCredentialAppleID?> signInWithApple() async {
     try {
       final credential = await SignInWithApple.getAppleIDCredential(
@@ -117,11 +144,12 @@ class AppleSignInPlugin {
 
       return credential;
     } catch (error) {
-      print('Error during Apple Sign-In: $error');
+      kLog(content: 'Error during Apple Sign-In: $error', title: 'Error');
       return null;
     }
   }
 
+  /// Signs out the user by revoking the Apple refresh token.
   static Future<void> signOut() async {
     try {
       // Retrieve the refresh token from storage
@@ -131,14 +159,25 @@ class AppleSignInPlugin {
         // Clear the stored token after revocation
         _storage.remove('refreshToken');
       } else {
-        print('No refresh token found');
+        kLog(content: 'No refresh token found', title: 'Info');
       }
     } catch (error) {
-      print('Error during Apple Sign-Out: $error');
+      kLog(content: 'Error during Apple Sign-Out: $error', title: 'Error');
+    }
+  }
+
+  /// Custom logging function for debug mode.
+  ///
+  /// [content] - The content to be logged.
+  /// [title] - Optional title for the log entry.
+  static void kLog({required content, String title = ""}) {
+    if (kDebugMode) {
+      log(content.toString(), name: title);
     }
   }
 }
 
 extension SecondsSinceEpoch on DateTime {
+  /// Gets the seconds since epoch from [DateTime].
   int get secondsSinceEpoch => millisecondsSinceEpoch ~/ 1000;
 }

@@ -1,3 +1,12 @@
+## 1.0.3
+
+* minor bug fixes
+
+## 1.0.2
+
+* package depend on sign_in_with_apple plugin
+* minor bug fixes
+
 ## 1.0.1
 
 * Add a issue tracker
