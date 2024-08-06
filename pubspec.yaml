@@ -1,15 +1,10 @@
 name: apple_sign_in_plugin
-description: "A robust Flutter package for integrating Apple Sign-In, ensuring secure authentication and consistent user data management through automated token handling and client secret generation."
-version: 1.0.5
-homepage: https://github.com/Digvijaysinh2204/apple_sign_in_plugin
+description: "A comprehensive Flutter package for integrating Apple Sign-In with features for secure authentication and user data management."
+version: 1.0.6
 repository: https://github.com/Digvijaysinh2204/apple_sign_in_plugin.git
 issue_tracker: https://github.com/Digvijaysinh2204/apple_sign_in_plugin/issues
-
-
-
 environment:
   sdk: '>=3.0.0 <4.0.0'
-
 dependencies:
   flutter:
     sdk: flutter
