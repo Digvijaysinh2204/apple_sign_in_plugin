@@ -1,4 +1,5 @@
 import 'package:apple_sign_in_plugin/apple_sign_in_plugin.dart';
+import 'package:flutter/foundation.dart';
 import 'package:flutter/material.dart';
 
 void main() async {
@@ -67,24 +68,34 @@ class _MyHomePageState extends State<MyHomePage> {
     try {
       final credential = await AppleSignInPlugin.signInWithApple();
       if (credential != null) {
-        print('Authorization Code: ${credential.authorizationCode}');
-        print('User Identifier: ${credential.userIdentifier}');
-        print('Email: ${credential.email}');
-        print('Full Name: ${credential.givenName} ${credential.familyName}');
+        if (kDebugMode) {
+          print('Authorization Code: ${credential.authorizationCode}');
+          print('User Identifier: ${credential.userIdentifier}');
+          print('Email: ${credential.email}');
+          print('Full Name: ${credential.givenName} ${credential.familyName}');
+        }
       } else {
-        print('Sign-in failed');
+        if (kDebugMode) {
+          print('Sign-in failed');
+        }
       }
     } catch (e) {
-      print('Error: $e');
+      if (kDebugMode) {
+        print('Error: $e');
+      }
     }
   }
 
   void signOut() async {
     try {
       await AppleSignInPlugin.signOut();
-      print('Signed out successfully');
+      if (kDebugMode) {
+        print('Signed out successfully');
+      }
     } catch (e) {
-      print('Error: $e');
+      if (kDebugMode) {
+        print('Error: $e');
+      }
     }
   }
 

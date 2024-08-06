@@ -6,6 +6,7 @@ import 'package:flutter/services.dart';
 import 'package:get_storage/get_storage.dart';
 import 'package:http/http.dart' as http;
 import 'package:jose/jose.dart';
+import 'package:jwt_decoder/jwt_decoder.dart';
 import 'package:sign_in_with_apple/sign_in_with_apple.dart';
 
 /// A plugin for handling Apple Sign-In functionality.
@@ -141,8 +142,21 @@ class AppleSignInPlugin {
       final tokens = await _getTokens(credential.authorizationCode.toString());
       // Save the refresh token using GetStorage
       _storage.write('refreshToken', tokens['refresh_token']);
-
-      return credential;
+      _storage.write('isAppleLogin', true);
+      if (credential.email != null) {
+        return credential;
+      } else {
+        var decodedToken =
+            JwtDecoder.decode(credential.identityToken.toString());
+        return AuthorizationCredentialAppleID(
+            userIdentifier: credential.userIdentifier,
+            givenName: credential.givenName ?? "",
+            familyName: credential.familyName ?? "",
+            authorizationCode: credential.authorizationCode,
+            email: decodedToken['email'] ?? "",
+            identityToken: credential.identityToken,
+            state: credential.state);
+      }
     } catch (error) {
       kLog(content: 'Error during Apple Sign-In: $error', title: 'Error');
       return null;
@@ -151,15 +165,22 @@ class AppleSignInPlugin {
 
   /// Signs out the user by revoking the Apple refresh token.
   static Future<void> signOut() async {
+    final isAppleLogin = _storage.read('isAppleLogin') ?? false;
+
     try {
-      // Retrieve the refresh token from storage
-      final refreshToken = _storage.read('refreshToken');
-      if (refreshToken != null) {
-        await _revokeAppleToken(refreshToken);
-        // Clear the stored token after revocation
-        _storage.remove('refreshToken');
+      if (isAppleLogin) {
+        // Retrieve the refresh token from storage
+        final refreshToken = _storage.read('refreshToken');
+        if (refreshToken != null) {
+          await _revokeAppleToken(refreshToken);
+          // Clear the stored token after revocation
+          _storage.remove('refreshToken');
+          _storage.remove('isAppleLogin');
+        } else {
+          kLog(content: 'No refresh token found', title: 'Info');
+        }
       } else {
-        kLog(content: 'No refresh token found', title: 'Info');
+        kLog(content: 'not login found to use apple signing', title: 'Info');
       }
     } catch (error) {
       kLog(content: 'Error during Apple Sign-Out: $error', title: 'Error');

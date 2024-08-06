@@ -1,3 +1,10 @@
+## 1.0.5
+* readme file change
+
+## 1.0.4
+* minor bug fixes
+* readme file change
+
 ## 1.0.3
 
 * minor bug fixes

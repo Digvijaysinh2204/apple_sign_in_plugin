@@ -1,5 +1,6 @@
 import 'dart:convert';
 
+import 'package:flutter/foundation.dart';
 import 'package:flutter/services.dart';
 import 'package:get_storage/get_storage.dart';
 import 'package:http/http.dart' as http;
@@ -94,12 +95,18 @@ class AppleSignInPlugin {
     );
 
     if (response.statusCode == 200) {
-      print('Token revoked successfully');
+      if (kDebugMode) {
+        print('Token revoked successfully');
+      }
       _storage.erase();
     } else {
-      print(
-          'Failed to revoke token: ${response.statusCode} ${response.reasonPhrase}');
-      print('Response body: ${response.body}');
+      if (kDebugMode) {
+        print(
+            'Failed to revoke token: ${response.statusCode} ${response.reasonPhrase}');
+      }
+      if (kDebugMode) {
+        print('Response body: ${response.body}');
+      }
     }
   }
 
@@ -117,7 +124,9 @@ class AppleSignInPlugin {
 
       return credential;
     } catch (error) {
-      print('Error during Apple Sign-In: $error');
+      if (kDebugMode) {
+        print('Error during Apple Sign-In: $error');
+      }
       return null;
     }
   }
@@ -131,10 +140,14 @@ class AppleSignInPlugin {
         // Clear the stored token after revocation
         _storage.remove('refreshToken');
       } else {
-        print('No refresh token found');
+        if (kDebugMode) {
+          print('No refresh token found');
+        }
       }
     } catch (error) {
-      print('Error during Apple Sign-Out: $error');
+      if (kDebugMode) {
+        print('Error during Apple Sign-Out: $error');
+      }
     }
   }
 }
