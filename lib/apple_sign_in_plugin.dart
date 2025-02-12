@@ -6,8 +6,8 @@ import 'package:flutter/services.dart';
 import 'package:get_storage/get_storage.dart';
 import 'package:http/http.dart' as http;
 import 'package:jose/jose.dart';
-import 'package:jwt_decoder/jwt_decoder.dart';
 import 'package:sign_in_with_apple/sign_in_with_apple.dart';
+import 'jwt_decoder.dart';
 
 /// A plugin for handling Apple Sign-In functionality.
 class AppleSignInPlugin {

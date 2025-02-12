@@ -1,5 +1,15 @@
+## 1.0.8
+* Fixed issue tracker URL
+* Improved documentation
+* Added proper homepage URL
+* Added Flutter SDK constraint
+* Code optimization and cleanup
+
 ## 1.0.7
-* plugin update
+* Initial release
+* Implemented Apple Sign-In functionality
+* Added secure authentication
+* Added user data management features
 
 ## 1.0.6
 * readme file change
