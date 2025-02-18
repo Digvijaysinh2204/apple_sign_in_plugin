@@ -1,3 +1,6 @@
+## 1.0.9
+* Licence Update 
+
 ## 1.0.8
 * Fixed issue tracker URL
 * Improved documentation
