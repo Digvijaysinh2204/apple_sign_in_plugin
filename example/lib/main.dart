@@ -8,7 +8,7 @@ void main() async {
     pemKeyPath: 'assets/keys/apple_private_key.pem',
     keyId: 'YOUR KEY ID',
     teamId: 'YOUR TEAM ID',
-    clientId: 'YOUR BUNDLE ID ',
+    bundleId: 'YOUR APP BUNDLE ID ',
   );
   runApp(const MyApp());
 }

@@ -23,17 +23,17 @@ class AppleSignInPlugin {
   /// [pemKeyPath] - Path to the PEM key file.
   /// [keyId] - The key identifier.
   /// [teamId] - The team identifier.
-  /// [clientId] - The client identifier.
+  /// [bundleId] - The client identifier.
   static Future<void> initialize({
     required String pemKeyPath,
     required String keyId,
     required String teamId,
-    required String clientId,
+    required String bundleId,
   }) async {
     _pemKeyPath = pemKeyPath;
     _keyId = keyId;
     _teamId = teamId;
-    _clientId = clientId;
+    _clientId = bundleId;
     await GetStorage.init('AppleSignInPlugin');
   }
 

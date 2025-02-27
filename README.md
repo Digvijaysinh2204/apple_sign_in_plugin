@@ -35,9 +35,11 @@ Before using this plugin, you'll need the following identifiers from your Apple 
 
 - **TeamID (AppID prefix)**: Found in your App ID identifiers
 - **KeyID**: Available in the keys section when downloading your private key
-- **ClientID**: Your Services ID in Apple's ecosystem
+- **BundleID**: Your App Bundle ID in Apple's ecosystem
 - **Private Key**: Download the `.p8` file (can only be downloaded once)
   - Recommended: Rename the file to `apple_private_key.pem`
+  - Also add this file in asset folder and assign path in pubspec.yaml
+  - ex: `assets/keys/apple_private_key.pem`
 
 ## Usage
 
@@ -48,7 +50,7 @@ await AppleSignInPlugin.initialize(
     pemKeyPath: 'path/to/your/apple_private_key.pem',
     keyId: 'your-key-id',
     teamId: 'your-team-id',
-    clientId: 'your-client-id',
+    bundleId: 'your-bundle-id',
 );
 ```
 
