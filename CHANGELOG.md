@@ -1,3 +1,25 @@
+## 1.0.10
+* Licence Update
+* Changed `clientId` to `bundleId` in Apple Sign-In initialization
+  - **Migration Example:**
+    ```dart
+    // Previous code
+    await AppleSignInPlugin.initialize(
+        pemKeyPath: 'path/to/your/apple_private_key.pem',
+        keyId: 'your-key-id',
+        teamId: 'your-team-id',
+        clientId: 'your-client-id',
+    );
+
+    // Updated code
+    await AppleSignInPlugin.initialize(
+        pemKeyPath: 'path/to/your/apple_private_key.pem',
+        keyId: 'your-key-id',
+        teamId: 'your-team-id',
+        bundleId: 'your-bundle-id',
+    );
+    ```
+
 ## 1.0.9
 * Licence Update 
 
