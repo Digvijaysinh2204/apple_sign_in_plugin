@@ -73,29 +73,44 @@ class AppleSignInPlugin {
   /// [authorizationCode] - The authorization code obtained from Apple Sign-In.
   static Future<Map<String, dynamic>> _getTokens(
       String authorizationCode) async {
-    final clientSecret = await _generateClientSecret(300);
-    final response = await http.post(
-      Uri.parse(tokenUrl),
-      headers: {
-        'Content-Type': 'application/x-www-form-urlencoded',
-      },
-      body: {
-        'client_id': _clientId,
-        'client_secret': clientSecret,
-        'code': authorizationCode,
-        'grant_type': 'authorization_code',
-      },
-    );
+    try {
+      final clientSecret = await _generateClientSecret(300);
+      final response = await http.post(
+        Uri.parse(tokenUrl),
+        headers: {
+          'Content-Type': 'application/x-www-form-urlencoded',
+        },
+        body: {
+          'client_id': _clientId,
+          'client_secret': clientSecret,
+          'code': authorizationCode,
+          'grant_type': 'authorization_code',
+        },
+      );
 
-    if (response.statusCode == 200) {
-      return Map<String, dynamic>.from(json.decode(response.body));
-    } else {
-      kLog(
-          content:
-              'Failed to get tokens: ${response.statusCode} ${response.reasonPhrase}',
-          title: 'Error');
-      throw Exception(
-          'Failed to get tokens: ${response.statusCode} ${response.reasonPhrase}');
+      if (response.statusCode == 200) {
+        final responseData = json.decode(response.body);
+        // Validate required fields
+        if (!responseData.containsKey('access_token') ||
+            !responseData.containsKey('refresh_token') ||
+            !responseData.containsKey('id_token')) {
+          throw Exception('Invalid token response: missing required fields');
+        }
+        return Map<String, dynamic>.from(responseData);
+      } else {
+        final errorBody = json.decode(response.body);
+        final errorMessage = errorBody['error'] ?? response.reasonPhrase;
+        kLog(
+            content:
+                'Failed to get tokens: ${response.statusCode} - $errorMessage',
+            title: 'Error');
+        throw Exception('Failed to get tokens: $errorMessage');
+      }
+    } catch (e) {
+      if (e is FormatException) {
+        kLog(content: 'Invalid JSON response from Apple', title: 'Error');
+      }
+      rethrow;
     }
   }
 
@@ -133,19 +148,41 @@ class AppleSignInPlugin {
   /// Signs in the user with Apple and returns the [AuthorizationCredentialAppleID].
   static Future<AuthorizationCredentialAppleID?> signInWithApple() async {
     try {
+      // First, check if there's an existing token and revoke it
+      final isAppleLogin = _storage.read('isAppleLogin') ?? false;
+      if (isAppleLogin) {
+        final refreshToken = _storage.read('refreshToken');
+        if (refreshToken != null) {
+          try {
+            await _revokeAppleToken(refreshToken);
+          } catch (e) {
+            kLog(
+                content: 'Failed to revoke previous token: $e',
+                title: 'Warning');
+          } finally {
+            // Always clear storage even if revocation fails
+            _storage.remove('refreshToken');
+            _storage.remove('isAppleLogin');
+          }
+        }
+      }
+
       final credential = await SignInWithApple.getAppleIDCredential(
         scopes: [
           AppleIDAuthorizationScopes.email,
           AppleIDAuthorizationScopes.fullName,
         ],
       );
+
       final tokens = await _getTokens(credential.authorizationCode.toString());
+
       // Save the refresh token using GetStorage
       _storage.write('refreshToken', tokens['refresh_token']);
       _storage.write('isAppleLogin', true);
+
       if (credential.email != null) {
         return credential;
-      } else {
+      } else if (credential.identityToken != null) {
         var decodedToken =
             JwtDecoder.decode(credential.identityToken.toString());
         return AuthorizationCredentialAppleID(
@@ -156,6 +193,8 @@ class AppleSignInPlugin {
             email: decodedToken['email'] ?? "",
             identityToken: credential.identityToken,
             state: credential.state);
+      } else {
+        throw Exception('No email or identity token received from Apple');
       }
     } catch (error) {
       kLog(content: 'Error during Apple Sign-In: $error', title: 'Error');
@@ -195,6 +234,13 @@ class AppleSignInPlugin {
     if (kDebugMode) {
       log(content.toString(), name: title);
     }
+  }
+
+  /// Checks if the user is currently signed in with Apple.
+  ///
+  /// Returns [true] if the user is signed in, [false] otherwise.
+  static bool isSignedIn() {
+    return _storage.read('isAppleLogin') ?? false;
   }
 }
 
