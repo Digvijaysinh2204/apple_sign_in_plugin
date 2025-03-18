@@ -1,3 +1,6 @@
+## 1.0.11
+* Plugin Update
+
 ## 1.0.10
 * Licence Update
 * Changed `clientId` to `bundleId` in Apple Sign-In initialization

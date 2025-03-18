@@ -3,6 +3,9 @@
 A comprehensive Flutter package for integrating Apple Sign-In with features for secure authentication and user data management.
 
 [![pub package](https://img.shields.io/pub/v/apple_sign_in_plugin.svg)](https://pub.dev/packages/apple_sign_in_plugin)
+[![License: MIT](https://img.shields.io/badge/License-MIT-yellow.svg)](https://pub.dev/packages/apple_sign_in_plugin/license)
+[![GitHub issues](https://img.shields.io/github/issues/Digvijaysinh2204/apple_sign_in_plugin)](https://github.com/Digvijaysinh2204/apple_sign_in_plugin/issues)
+[![GitHub pull requests](https://img.shields.io/github/issues-pr/Digvijaysinh2204/apple_sign_in_plugin)](https://github.com/Digvijaysinh2204/apple_sign_in_plugin/pulls)
 
 ## Features
 
@@ -99,7 +102,7 @@ This project is licensed under the MIT License - see the [LICENSE](LICENSE) file
 
 ## Support
 
-If you encounter any issues or have questions, please file them on the [GitHub repository](https://github.com/your-repo/apple_sign_in_plugin/issues).
+If you encounter any issues or have questions, please file them on the [GitHub repository](https://github.com/Digvijaysinh2204/apple_sign_in_plugin/issues).
 
 
 
