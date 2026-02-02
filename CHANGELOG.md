@@ -1,3 +1,7 @@
+## 1.2.2
+- **Fix**: Applied `dart format` to `example/lib/main.dart` to ensure clean git state during publishing.
+- **Maintenance**: Verified clean analysis and formatting for all files.
+
 ## 1.2.1
 - **Documentation**: Achieved 100% documentation coverage. Every method and parameter now has educational DartDocs.
 - **Example App**: Improved UI to clearly display Backend Tokens (ID, Access, Refresh) for easier debugging.
