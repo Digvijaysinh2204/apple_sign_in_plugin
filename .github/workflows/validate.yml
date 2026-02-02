@@ -41,3 +41,9 @@ jobs:
 
       - name: 'Analyze project source'
         run: flutter analyze --fatal-infos --fatal-warnings
+
+      - name: 'Run tests'
+        run: flutter test
+
+      - name: 'Validate Publish (Dry Run)'
+        run: flutter pub publish --dry-run
