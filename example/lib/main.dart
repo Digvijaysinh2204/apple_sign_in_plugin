@@ -49,6 +49,8 @@ class _SignInPageState extends State<SignInPage> {
     _checkLoginStatus();
   }
 
+  /// Checks if the user is already signed in (based on local storage).
+  /// This allows the app to stay logged in across restarts.
   Future<void> _checkLoginStatus() async {
     final isSignedIn = AppleSignInPlugin.isSignedIn();
     setState(() {
@@ -56,6 +58,8 @@ class _SignInPageState extends State<SignInPage> {
     });
   }
 
+  /// Initiates the Apple Sign-In flow.
+  /// If successful, it returns the [AppleSignInResult] containing all tokens.
   Future<void> _signIn() async {
     setState(() => _isLoading = true);
     try {
@@ -87,6 +91,7 @@ class _SignInPageState extends State<SignInPage> {
     }
   }
 
+  /// Signs out the user and revokes the token from Apple's server.
   Future<void> _signOut() async {
     setState(() => _isLoading = true);
     try {
@@ -173,10 +178,12 @@ class _SignInPageState extends State<SignInPage> {
                     ? '${_result!.userIdentifier!.substring(0, 5)}...'
                     : 'N/A'),
             const Divider(),
-            const Text('Tokens (Backend Ready):',
+            const Text('Backend Tokens:',
                 style: TextStyle(fontSize: 16, fontWeight: FontWeight.bold)),
-            _userInfoRow('Info',
-                'Full result object contains ID Token,\nAccess Token & Refresh Token.'),
+            const SizedBox(height: 10),
+            _tokenInfoRow('ID Token (JWT)', _result?.idToken),
+            _tokenInfoRow('Access Token', _result?.accessToken),
+            _tokenInfoRow('Refresh Token', _result?.refreshToken),
           ] else
             const Text('Session active (details pending fresh login)'),
           const SizedBox(height: 40),
@@ -211,6 +218,33 @@ class _SignInPageState extends State<SignInPage> {
             ),
           ),
           Expanded(child: Text(value)),
+        ],
+      ),
+    );
+  }
+  Widget _tokenInfoRow(String label, String? token) {
+    return Padding(
+      padding: const EdgeInsets.symmetric(vertical: 4.0),
+      child: Column(
+        crossAxisAlignment: CrossAxisAlignment.start,
+        children: [
+          Text('$label:', style: const TextStyle(fontWeight: FontWeight.bold)),
+          Container(
+            width: double.infinity,
+            padding: const EdgeInsets.all(8),
+            decoration: BoxDecoration(
+              color: Colors.grey[200],
+              borderRadius: BorderRadius.circular(4),
+            ),
+            child: Text(
+              token != null
+                  ? (token.length > 20
+                      ? '${token.substring(0, 20)}...[truncated]'
+                      : token)
+                  : 'Not available',
+              style: const TextStyle(fontFamily: 'Courier', fontSize: 12),
+            ),
+          ),
         ],
       ),
     );

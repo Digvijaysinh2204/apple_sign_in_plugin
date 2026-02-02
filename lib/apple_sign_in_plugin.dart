@@ -10,21 +10,48 @@ import 'package:sign_in_with_apple/sign_in_with_apple.dart';
 export 'package:sign_in_with_apple/sign_in_with_apple.dart';
 import 'jwt_decoder.dart';
 
-/// A plugin for handling Apple Sign-In functionality.
+/// **Apple Sign-In Plugin**
+///
+/// A comprehensive plugin that acts as a wrapper around `sign_in_with_apple`.
+/// It provides enhanced features specifically for backend integration:
+/// * **Automatic Token Exchange**: Swaps the auth code for access/refresh tokens.
+/// * **Token Management**: securely stores and revokes refresh tokens.
+/// * **Comprehensive Result**: Returns an [AppleSignInResult] containing everything your backend needs.
 class AppleSignInPlugin {
+  /// **Private Key Path**
+  ///
+  /// The local path to your `.pem` file (e.g., `assets/keys/apple_private_key.pem`).
+  /// This file is required to generate the Client Secret for Apple.
   static String? _pemKeyPath;
+
+  /// **Key ID**
+  ///
+  /// The 10-character Key ID from your Apple Developer Account (Certificates, Identifiers & Profiles > Keys).
   static String? _keyId;
+
+  /// **Team ID**
+  ///
+  /// The 10-character Team ID from your Apple Developer Account (top right corner).
   static String? _teamId;
+
+  /// **Bundle ID (Client ID)**
+  ///
+  /// The Bundle ID of your app (e.g., `com.example.app`).
+  /// This must match the Service ID configured for Sign in with Apple.
   static String? _clientId;
 
   static final _storage = GetStorage('AppleSignInPlugin');
 
-  /// Initializes the AppleSignInPlugin with necessary parameters.
+  /// **Initialize the Plugin**
   ///
-  /// [pemKeyPath] - Path to the PEM key file.
-  /// [keyId] - The key identifier.
-  /// [teamId] - The team identifier.
-  /// [bundleId] - The client identifier.
+  /// Call this method **once** (usually in `main.dart`) before using any other features.
+  /// It sets up the cryptographic keys required to communicate securely with Apple.
+  ///
+  /// **Parameters:**
+  /// * [pemKeyPath]: **Required**. The path to your `.pem` file in assets (e.g., `'assets/keys/apple_private_key.pem'`).
+  /// * [keyId]: **Required**. Your 10-character Key ID from Apple Developer Console.
+  /// * [teamId]: **Required**. Your 10-character Team ID.
+  /// * [bundleId]: **Required**. Your App ID (e.g., `com.example.app`). Must match your Service ID.
   static Future<void> initialize({
     required String pemKeyPath,
     required String keyId,
@@ -47,14 +74,23 @@ class AppleSignInPlugin {
   static const tokenUrl = 'https://appleid.apple.com/auth/token';
   static const revokeUrl = 'https://appleid.apple.com/auth/revoke';
 
-  /// Loads the PEM key content from the specified path.
+  /// **Load Private Key**
+  ///
+  /// Reads the content of the `.pem` file from the assets bundle.
+  /// Internal helper used by [_generateClientSecret].
   static Future<String> _loadPemKey() async {
     return await rootBundle.loadString(_pemKeyPath!);
   }
 
-  /// Generates a client secret for Apple authentication.
+  /// **Generate Client Secret (JWT)**
   ///
-  /// [validDuration] - The duration for which the client secret is valid, in seconds.
+  /// Creates a signed ES256 JSON Web Token (JWT) required by Apple's API.
+  ///
+  /// **Parameters:**
+  /// * [validDuration]: How long the secret is valid (in seconds). Default usually 300s (5 mins).
+  ///
+  /// **Returns:**
+  /// * A `String` containing the signed JWT.
   static Future<String> _generateClientSecret(int validDuration) async {
     final pemKeyContent = await _loadPemKey();
     final jwk = JsonWebKey.fromPem(pemKeyContent, keyId: _keyId!);
@@ -75,9 +111,13 @@ class AppleSignInPlugin {
     return builder.build().toCompactSerialization();
   }
 
-  /// Retrieves tokens using the provided authorization code.
+  /// **Exchange Authorization Code for Tokens**
   ///
-  /// [authorizationCode] - The authorization code obtained from Apple Sign-In.
+  /// Calls Apple's `auth/token` endpoint to exchange the one-time [authorizationCode]
+  /// for a persistent `refresh_token` and `access_token`.
+  ///
+  /// **Parameters:**
+  /// * [authorizationCode]: The short-lived code returned from the native sign-in flow.
   static Future<Map<String, dynamic>> _getTokens(
       String authorizationCode) async {
     try {
@@ -121,9 +161,13 @@ class AppleSignInPlugin {
     }
   }
 
-  /// Revokes the Apple refresh token.
+  /// **Revoke Refresh Token**
   ///
-  /// [refreshToken] - The refresh token to be revoked.
+  /// Calls Apple's `auth/revoke` endpoint to invalidate a refresh token.
+  /// This ensures the user is signed out on Apple's side as well for this app.
+  ///
+  /// **Parameters:**
+  /// * [refreshToken]: The token to revoke.
   static Future<void> _revokeAppleToken(String refreshToken) async {
     final clientSecret = await _generateClientSecret(300);
 
@@ -152,7 +196,23 @@ class AppleSignInPlugin {
     }
   }
 
-  /// Signs in the user with Apple and returns the [AppleSignInResult].
+  /// **Sign In with Apple**
+  ///
+  /// Triggers the native Apple Sign-In flow.
+  ///
+  /// **Returns:**
+  /// * `Future<AppleSignInResult?>`: A complete object containing the User's Profile (Name, Email) and
+  ///   Backend Tokens (ID Token, Access Token, Refresh Token).
+  /// * Returns `null` if the user cancels the sign-in or if an error occurs.
+  ///
+  /// **Usage:**
+  /// ```dart
+  /// final result = await AppleSignInPlugin.signInWithApple();
+  /// if (result != null) {
+  ///   print("User ID: ${result.userIdentifier}");
+  ///   print("ID Token: ${result.idToken}"); // Send this to your server!
+  /// }
+  /// ```
   static Future<AppleSignInResult?> signInWithApple() async {
     try {
       // First, check if there's an existing token and revoke it
@@ -210,7 +270,12 @@ class AppleSignInPlugin {
     }
   }
 
-  /// Signs out the user by revoking the Apple refresh token.
+  /// **Sign Out & Revoke**
+  ///
+  /// 1. Revokes the `refresh_token` with Apple servers (security best practice).
+  /// 2. Clears the local session data.
+  ///
+  /// Call this when the user logs out of your app.
   static Future<void> signOut() async {
     final isAppleLogin = _storage.read('isAppleLogin') ?? false;
 
@@ -244,9 +309,10 @@ class AppleSignInPlugin {
     }
   }
 
-  /// Checks if the user is currently signed in with Apple.
+  /// **Check Login Status**
   ///
-  /// Returns [true] if the user is signed in, [false] otherwise.
+  /// Returns `true` if the user has a valid session (i.e., a stored refresh token).
+  /// Note: This does not verify the token with Apple; it only checks local state.
   static bool isSignedIn() {
     return _storage.read('isAppleLogin') ?? false;
   }
@@ -254,28 +320,52 @@ class AppleSignInPlugin {
 
 /// A class containing all relevant data from a successful Apple Sign-In.
 class AppleSignInResult {
-  /// The JSON Web Token (JWT) that contains the user's identity information.
+  /// **ID Token (JWT)**
+  ///
+  /// This is the most important field for backend verification.
+  /// It is a JSON Web Token (JWT) that safely identifies the user.
+  /// Send this to your server to verify the user's identity with Apple.
   final String? idToken;
 
-  /// The access token used to authorize API requests.
+  /// **Access Token**
+  ///
+  /// A short-lived token used to call Apple's APIs on behalf of the user.
   final String? accessToken;
 
-  /// The refresh token used to obtain new access tokens.
+  /// **Refresh Token**
+  ///
+  /// A long-lived token used to regenerate a new [accessToken] when it expires.
+  /// Store this securely on your server if you need offline access.
   final String? refreshToken;
 
-  /// The authorization code used to exchange for tokens.
+  /// **Authorization Code**
+  ///
+  /// A single-use code that is exchanged for the tokens above.
+  /// (The plugin handles this exchange automatically, but it is provided here if you need it).
   final String? authorizationCode;
 
-  /// The unique identifier for the user.
+  /// **User Identifier**
+  ///
+  /// A unique, stable ID for the user (e.g., `000000.abc123...`).
+  /// Use this to link the user to a record in your database.
   final String? userIdentifier;
 
-  /// The user's given name (first name).
+  /// **Given Name**
+  ///
+  /// The user's first name.
+  /// *Note: This is only returned on the **first** sign-in.*
   final String? givenName;
 
-  /// The user's family name (last name).
+  /// **Family Name**
+  ///
+  /// The user's last name.
+  /// *Note: This is only returned on the **first** sign-in.*
   final String? familyName;
 
+  /// **Email**
+  ///
   /// The user's email address.
+  /// *Note: This usually comes from the [idToken].*
   final String? email;
 
   AppleSignInResult({

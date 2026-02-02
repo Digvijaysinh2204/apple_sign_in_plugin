@@ -20,7 +20,7 @@ Add this to your package's `pubspec.yaml` file:
 
 ```yaml
 dependencies:
-  apple_sign_in_plugin: ^1.0.12
+  apple_sign_in_plugin: ^1.2.1
 ```
 
 ## Setup & Prerequisites
@@ -89,18 +89,19 @@ Securely sign out and revoke tokens.
 await AppleSignInPlugin.signOut();
 ```
 
-## The `AppleSignInResult` Object
-The plugin returns a comprehensive object designed for easy backend integration:
+## 📦 What do you get back? (`AppleSignInResult`)
+The plugin returns an `AppleSignInResult` object with everything you need. Here is what each field means:
 
-| Property | Description |
-| :--- | :--- |
-| `idToken` | The **JWT** (Identity Token) issued by Apple. Verify this on your server. |
-| `accessToken` | Token for authenticating against Apple's REST API. |
-| `refreshToken` | Token used to regenerate access tokens. |
-| `authorizationCode` | One-time code to exchange for tokens (already exchanged by plugin, but provided if needed). |
-| `userIdentifier` | A stable, unique ID for this user. |
-| `email` | User's email address. |
-| `givenName` / `familyName` | User's name components. |
+| Field | Description | Why do I need it? |
+| :--- | :--- | :--- |
+| **`idToken`** | A **JSON Web Token (JWT)** that proves the user's identity. | **Crucial for Backend**: Send this to your server to verify the user is real. |
+| **`accessToken`** | A short-lived token for Apple API calls. | Used if your server needs to talk to Apple APIs. |
+| **`refreshToken`** | A long-lived token. | Used to get a new `accessToken` when the old one expires. |
+| **`authorizationCode`** | A one-time code. | The plugin uses this to get the tokens above. You rarely need this manually. |
+| **`userIdentifier`** | A unique User ID (e.g., `000xxx...`). | **Database Key**: Use this to find/create the user in your database. |
+| **`email`** | User's email address. | To contact the user. |
+| **`givenName`** | First Name. | **First Login Only**: Save this immediately! Apple only sends it once. |
+| **`familyName`** | Last Name. | **First Login Only**: Save this immediately! |
 
 ## Important Notes
 *   **Simulator Issues**: Apple Sign-In may not work correctly on iOS Simulators. Test on a real device.
