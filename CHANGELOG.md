@@ -1,3 +1,7 @@
+## 1.2.6
+- **Build**: Enforced strict `dart format` to satisfy CI/CD publishing requirements.
+- **Release**: Final verified build.
+
 ## 1.2.5
 - **Hotfix**: Fixed Dart analyzer error where `_getTokens` return type was not guaranteed. Updated error helper to return `Never`.
 
