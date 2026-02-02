@@ -166,7 +166,8 @@ class AppleSignInPlugin {
   ///
   /// Parses standard Apple error codes and throws a user-friendly exception.
   /// Returns [Never] to indicate this function always throws.
-  static Never _handleAppleError(Map<String, dynamic> errorBody, String? reasonPhrase) {
+  static Never _handleAppleError(
+      Map<String, dynamic> errorBody, String? reasonPhrase) {
     final errorCode = errorBody['error'] ?? 'unknown_error';
     final errorDescription = errorBody['error_description'] ?? reasonPhrase;
 
@@ -191,7 +192,9 @@ class AppleSignInPlugin {
           'Cause: One or more parameters in the token request are missing or incorrect.';
     }
 
-    _log(content: '$friendlyMessage \nRaw Description: $errorDescription', title: 'Error');
+    _log(
+        content: '$friendlyMessage \nRaw Description: $errorDescription',
+        title: 'Error');
     throw Exception(friendlyMessage);
   }
 
