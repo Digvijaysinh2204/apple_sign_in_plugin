@@ -1,5 +1,13 @@
-## 1.0.11
-* Plugin Update
+## 1.0.13
+* Documentation Update
+* Improved README with comprehensive usage guide
+* Added detailed CHANGELOG
+
+## 1.0.12
+* **BREAKING CHANGE**: `signInWithApple()` now returns `AppleSignInResult` object instead of `AuthorizationCredentialAppleID`
+* Added support for returning complete backend-ready object
+* Exposed `idToken` (JWT), `accessToken`, `refreshToken`, and user details in the result object
+* Fixed issue where tokens were not accessible for backend verification
 
 ## 1.0.10
 * Licence Update
