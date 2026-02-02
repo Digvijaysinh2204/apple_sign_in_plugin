@@ -1,3 +1,6 @@
+## 1.2.5
+- **Hotfix**: Fixed Dart analyzer error where `_getTokens` return type was not guaranteed. Updated error helper to return `Never`.
+
 ## 1.2.4
 - **Refactor**: Cleaned up internal error handling logic for better readability.
 - **Improved**: Error messages are now professional, structured, and provide clear action items.

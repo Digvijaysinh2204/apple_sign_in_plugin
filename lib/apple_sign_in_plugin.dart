@@ -165,7 +165,8 @@ class AppleSignInPlugin {
   /// **Handle Apple Error Response**
   ///
   /// Parses standard Apple error codes and throws a user-friendly exception.
-  static void _handleAppleError(Map<String, dynamic> errorBody, String? reasonPhrase) {
+  /// Returns [Never] to indicate this function always throws.
+  static Never _handleAppleError(Map<String, dynamic> errorBody, String? reasonPhrase) {
     final errorCode = errorBody['error'] ?? 'unknown_error';
     final errorDescription = errorBody['error_description'] ?? reasonPhrase;
 
