@@ -222,6 +222,7 @@ class _SignInPageState extends State<SignInPage> {
       ),
     );
   }
+
   Widget _tokenInfoRow(String label, String? token) {
     return Padding(
       padding: const EdgeInsets.symmetric(vertical: 4.0),
