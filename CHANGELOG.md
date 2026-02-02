@@ -1,19 +1,8 @@
-## 1.0.14
-* CI/CD Update
-* Fixed GitHub Workflows to use Flutter SDK instead of Dart SDK (resolves `version solving failed` error)
-* Removed invalid binary build step
-* Code formatting applied
-
-## 1.0.13
-* Documentation Update
-* Improved README with comprehensive usage guide
-* Added detailed CHANGELOG
-
-## 1.0.12
-* **BREAKING CHANGE**: `signInWithApple()` now returns `AppleSignInResult` object instead of `AuthorizationCredentialAppleID`
-* Added support for returning complete backend-ready object
-* Exposed `idToken` (JWT), `accessToken`, `refreshToken`, and user details in the result object
-* Fixed issue where tokens were not accessible for backend verification
+## 1.1.0
+* **MAJOR BREAKING CHANGE**: `signInWithApple()` now returns `AppleSignInResult` object instead of `AuthorizationCredentialAppleID`
+* **Backend Ready**: The result object now contains `idToken` (JWT), `accessToken`, `refreshToken`, and user details essential for backend verification.
+* **CI/CD**: Fixed version solving errors by switching to Flutter SDK in GitHub Workflows.
+* **Code Quality**: Applied dart formatting and improved documentation.
 
 ## 1.0.10
 * Licence Update
