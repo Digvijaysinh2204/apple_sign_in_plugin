@@ -1,3 +1,7 @@
+## 1.1.1
+* Fixed CI error: `Undefined name 'main'` in tests
+* Replaced invalid test file with valid placeholder
+
 ## 1.1.0
 * **MAJOR BREAKING CHANGE**: `signInWithApple()` now returns `AppleSignInResult` object instead of `AuthorizationCredentialAppleID`
 * **Backend Ready**: The result object now contains `idToken` (JWT), `accessToken`, `refreshToken`, and user details essential for backend verification.
