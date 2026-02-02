@@ -1,3 +1,7 @@
+## 1.1.2
+* Fixed CI Analysis Error: Removed unused `dart:developer` import
+* Code cleanup
+
 ## 1.1.1
 * Fixed CI error: `Undefined name 'main'` in tests
 * Replaced invalid test file with valid placeholder
