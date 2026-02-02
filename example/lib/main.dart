@@ -175,7 +175,8 @@ class _SignInPageState extends State<SignInPage> {
             const Divider(),
             const Text('Tokens (Backend Ready):',
                 style: TextStyle(fontSize: 16, fontWeight: FontWeight.bold)),
-            _userInfoRow('Info', 'Full result object contains ID Token,\nAccess Token & Refresh Token.'),
+            _userInfoRow('Info',
+                'Full result object contains ID Token,\nAccess Token & Refresh Token.'),
           ] else
             const Text('Session active (details pending fresh login)'),
           const SizedBox(height: 40),

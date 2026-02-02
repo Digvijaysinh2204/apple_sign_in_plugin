@@ -19,10 +19,12 @@ jobs:
           ref: ${{ github.ref }}
           fetch-depth: 0
 
-      - uses: dart-lang/setup-dart@v1
+      - uses: subosito/flutter-action@v2
+        with:
+          channel: 'stable'
 
       - name: 'Install dependencies'
-        run: dart pub get
+        run: flutter pub get
 
       - name: 'Format code'
         run: dart format .
@@ -39,45 +41,7 @@ jobs:
           fi
 
       - name: 'Analyze project source'
-        run: dart analyze --fatal-infos --fatal-warnings
-
-  build:
-    name: 'Build Binaries'
-    needs: format-and-analyze
-    strategy:
-      fail-fast: false
-      matrix:
-        include:
-          - os: ubuntu-latest
-            output: dg-linux
-          - os: macos-latest
-            output: dg-macos
-          - os: windows-latest
-            output: dg-windows.exe
-    runs-on: ${{ matrix.os }}
-    steps:
-      - uses: actions/checkout@v4
-      - uses: dart-lang/setup-dart@v1
-
-      - name: 'Cache Pub Session'
-        uses: actions/cache@v4
-        with:
-          path: ~/.pub-cache
-          key: ${{ runner.os }}-pub-${{ hashFiles('**/pubspec.lock') }}
-          restore-keys: |
-            ${{ runner.os }}-pub-
-
-      - name: 'Install dependencies'
-        run: dart pub get
-
-      - name: 'Build Binary'
-        run: dart compile exe bin/dig_cli.dart -o ${{ matrix.output }}
-
-      - name: 'Upload Artifact'
-        uses: actions/upload-artifact@v4
-        with:
-          name: binary-${{ matrix.os }}
-          path: ${{ matrix.output }}
+        run: flutter analyze --fatal-infos --fatal-warnings
 
   publish:
     name: 'Publish to Pub.dev'
@@ -87,31 +51,9 @@ jobs:
       id-token: write
     steps:
       - uses: actions/checkout@v4
-      - uses: dart-lang/setup-dart@v1
+      - uses: subosito/flutter-action@v2
+        with:
+          channel: 'stable'
 
       - name: 'Publish to pub.dev'
-        run: dart pub publish --force
-
-  release:
-    name: 'Create GitHub Release'
-    needs: [build, publish]
-    runs-on: ubuntu-latest
-    permissions:
-      contents: write
-    steps:
-      - uses: actions/checkout@v4
-
-      - name: 'Download compiled binaries'
-        uses: actions/download-artifact@v4
-        with:
-          pattern: binary-*
-          merge-multiple: true
-
-      - name: 'Create GitHub Release'
-        uses: softprops/action-gh-release@v1
-        with:
-          files: |
-            dg-linux
-            dg-windows.exe
-            dg-macos
-          generate_release_notes: true
+        run: flutter pub publish --force

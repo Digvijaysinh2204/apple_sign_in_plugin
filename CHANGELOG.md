@@ -1,3 +1,9 @@
+## 1.0.14
+* CI/CD Update
+* Fixed GitHub Workflows to use Flutter SDK instead of Dart SDK (resolves `version solving failed` error)
+* Removed invalid binary build step
+* Code formatting applied
+
 ## 1.0.13
 * Documentation Update
 * Improved README with comprehensive usage guide

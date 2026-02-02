@@ -31,7 +31,10 @@ class AppleSignInPlugin {
     required String teamId,
     required String bundleId,
   }) async {
-    if (pemKeyPath.isEmpty || keyId.isEmpty || teamId.isEmpty || bundleId.isEmpty) {
+    if (pemKeyPath.isEmpty ||
+        keyId.isEmpty ||
+        teamId.isEmpty ||
+        bundleId.isEmpty) {
       throw ArgumentError('All parameters must be non-empty strings');
     }
     _pemKeyPath = pemKeyPath;
