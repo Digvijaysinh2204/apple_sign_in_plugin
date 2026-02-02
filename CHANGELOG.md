@@ -1,3 +1,6 @@
+## 1.1.3
+* Final release with automated publishing configuration
+
 ## 1.1.2
 * Fixed CI Analysis Error: Removed unused `dart:developer` import
 * Code cleanup
