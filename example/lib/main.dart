@@ -4,11 +4,13 @@ import 'package:flutter/material.dart';
 
 void main() async {
   WidgetsFlutterBinding.ensureInitialized();
+  // Initialize the plugin with your specific credentials
+  // correct key path and IDs are required for this to work
   await AppleSignInPlugin.initialize(
     pemKeyPath: 'assets/keys/apple_private_key.pem',
-    keyId: 'YOUR KEY ID',
-    teamId: 'YOUR TEAM ID',
-    bundleId: 'YOUR APP BUNDLE ID ',
+    keyId: 'YOUR_KEY_ID',
+    teamId: 'YOUR_TEAM_ID',
+    bundleId: 'YOUR_APP_BUNDLE_ID',
   );
   runApp(const MyApp());
 }
@@ -16,145 +18,200 @@ void main() async {
 class MyApp extends StatelessWidget {
   const MyApp({super.key});
 
-  // This widget is the root of your application.
   @override
   Widget build(BuildContext context) {
     return MaterialApp(
-      title: 'Flutter Demo',
+      title: 'Apple Sign In Example',
       theme: ThemeData(
-        // This is the theme of your application.
-        //
-        // TRY THIS: Try running your application with "flutter run". You'll see
-        // the application has a purple toolbar. Then, without quitting the app,
-        // try changing the seedColor in the colorScheme below to Colors.green
-        // and then invoke "hot reload" (save your changes or press the "hot
-        // reload" button in a Flutter-supported IDE, or press "r" if you used
-        // the command line to start the app).
-        //
-        // Notice that the counter didn't reset back to zero; the application
-        // state is not lost during the reload. To reset the state, use hot
-        // restart instead.
-        //
-        // This works for code too, not just values: Most code changes can be
-        // tested with just a hot reload.
-        colorScheme: ColorScheme.fromSeed(seedColor: Colors.deepPurple),
+        colorScheme: ColorScheme.fromSeed(seedColor: Colors.black),
         useMaterial3: true,
       ),
-      home: const MyHomePage(title: 'Flutter Demo Home Page'),
+      home: const SignInPage(),
     );
   }
 }
 
-class MyHomePage extends StatefulWidget {
-  const MyHomePage({super.key, required this.title});
-
-  // This widget is the home page of your application. It is stateful, meaning
-  // that it has a State object (defined below) that contains fields that affect
-  // how it looks.
-
-  // This class is the configuration for the state. It holds the values (in this
-  // case the title) provided by the parent (in this case the App widget) and
-  // used by the build method of the State. Fields in a Widget subclass are
-  // always marked "final".
-
-  final String title;
+class SignInPage extends StatefulWidget {
+  const SignInPage({super.key});
 
   @override
-  State<MyHomePage> createState() => _MyHomePageState();
+  State<SignInPage> createState() => _SignInPageState();
 }
 
-class _MyHomePageState extends State<MyHomePage> {
-  void signIn() async {
+class _SignInPageState extends State<SignInPage> {
+  AppleSignInResult? _result;
+  bool _isLoggedIn = false;
+  bool _isLoading = false;
+
+  @override
+  void initState() {
+    super.initState();
+    _checkLoginStatus();
+  }
+
+  Future<void> _checkLoginStatus() async {
+    final isSignedIn = AppleSignInPlugin.isSignedIn();
+    setState(() {
+      _isLoggedIn = isSignedIn;
+    });
+  }
+
+  Future<void> _signIn() async {
+    setState(() => _isLoading = true);
     try {
-      final credential = await AppleSignInPlugin.signInWithApple();
-      if (credential != null) {
+      final result = await AppleSignInPlugin.signInWithApple();
+      if (result != null) {
+        setState(() {
+          _result = result;
+          _isLoggedIn = true;
+        });
         if (kDebugMode) {
-          print('Authorization Code: ${credential.authorizationCode}');
-          print('User Identifier: ${credential.userIdentifier}');
-          print('Email: ${credential.email}');
-          print('Full Name: ${credential.givenName} ${credential.familyName}');
-        }
-      } else {
-        if (kDebugMode) {
-          print('Sign-in failed');
+          print('Sign in success: ${result.email}');
+          print('ID Token: ${result.idToken}');
+          print('Access Token: ${result.accessToken}');
         }
       }
     } catch (e) {
       if (kDebugMode) {
-        print('Error: $e');
+        print('Sign in error: $e');
+      }
+      if (mounted) {
+        ScaffoldMessenger.of(context).showSnackBar(
+          SnackBar(content: Text('Sign in failed: $e')),
+        );
+      }
+    } finally {
+      if (mounted) {
+        setState(() => _isLoading = false);
       }
     }
   }
 
-  void signOut() async {
+  Future<void> _signOut() async {
+    setState(() => _isLoading = true);
     try {
       await AppleSignInPlugin.signOut();
-      if (kDebugMode) {
-        print('Signed out successfully');
-      }
+      setState(() {
+        _result = null;
+        _isLoggedIn = false;
+      });
     } catch (e) {
       if (kDebugMode) {
-        print('Error: $e');
+        print('Sign out error: $e');
+      }
+    } finally {
+      if (mounted) {
+        setState(() => _isLoading = false);
       }
     }
   }
 
   @override
   Widget build(BuildContext context) {
-    // This method is rerun every time setState is called, for instance as done
-    // by the _incrementCounter method above.
-    //
-    // The Flutter framework has been optimized to make rerunning build methods
-    // fast, so that you can just rebuild anything that needs updating rather
-    // than having to individually change instances of widgets.
     return Scaffold(
       appBar: AppBar(
-        // TRY THIS: Try changing the color here to a specific color (to
-        // Colors.amber, perhaps?) and trigger a hot reload to see the AppBar
-        // change color while the other colors stay the same.
+        title: const Text('Apple Sign In Plugin'),
         backgroundColor: Theme.of(context).colorScheme.inversePrimary,
-        // Here we take the value from the MyHomePage object that was created by
-        // the App.build method, and use it to set our appbar title.
-        title: Text(widget.title),
       ),
       body: Center(
-        // Center is a layout widget. It takes a single child and positions it
-        // in the middle of the parent.
-        child: Column(
-          // Column is also a layout widget. It takes a list of children and
-          // arranges them vertically. By default, it sizes itself to fit its
-          // children horizontally, and tries to be as tall as its parent.
-          //
-          // Column has various properties to control how it sizes itself and
-          // how it positions its children. Here we use mainAxisAlignment to
-          // center the children vertically; the main axis here is the vertical
-          // axis because Columns are vertical (the cross axis would be
-          // horizontal).
-          //
-          // TRY THIS: Invoke "debug painting" (choose the "Toggle Debug Paint"
-          // action in the IDE, or press "p" in the console), to see the
-          // wireframe for each widget.
-          mainAxisAlignment: MainAxisAlignment.center,
-          children: <Widget>[
-            InkWell(
-              onTap: () {
-                signOut();
-              },
-              child: Text(
-                'LOGOUT',
-                style: Theme.of(context).textTheme.headlineMedium,
+        child: _isLoading
+            ? const CircularProgressIndicator()
+            : Padding(
+                padding: const EdgeInsets.all(24.0),
+                child: _isLoggedIn ? _buildUserProfile() : _buildLoginButton(),
+              ),
+      ),
+    );
+  }
+
+  Widget _buildLoginButton() {
+    return Column(
+      mainAxisAlignment: MainAxisAlignment.center,
+      children: [
+        const Icon(Icons.apple, size: 80),
+        const SizedBox(height: 20),
+        const Text(
+          'Sign in to access your account',
+          style: TextStyle(fontSize: 18),
+        ),
+        const SizedBox(height: 40),
+        SizedBox(
+          width: double.infinity,
+          height: 50,
+          child: ElevatedButton.icon(
+            onPressed: _signIn,
+            icon: const Icon(Icons.apple),
+            label: const Text('Sign in with Apple'),
+            style: ElevatedButton.styleFrom(
+              backgroundColor: Colors.black,
+              foregroundColor: Colors.white,
+            ),
+          ),
+        ),
+      ],
+    );
+  }
+
+  Widget _buildUserProfile() {
+    return SingleChildScrollView(
+      child: Column(
+        mainAxisAlignment: MainAxisAlignment.center,
+        crossAxisAlignment: CrossAxisAlignment.start,
+        children: [
+          const Center(child: Icon(Icons.account_circle, size: 80)),
+          const SizedBox(height: 30),
+          const Text('User Details:',
+              style: TextStyle(fontSize: 20, fontWeight: FontWeight.bold)),
+          const Divider(),
+          if (_result != null) ...[
+            _userInfoRow('Name',
+                '${_result?.givenName ?? ''} ${_result?.familyName ?? ''}'),
+            _userInfoRow('Email', _result?.email ?? 'N/A'),
+            _userInfoRow(
+                'User ID',
+                _result?.userIdentifier != null
+                    ? '${_result!.userIdentifier!.substring(0, 5)}...'
+                    : 'N/A'),
+            const Divider(),
+            const Text('Tokens (Backend Ready):',
+                style: TextStyle(fontSize: 16, fontWeight: FontWeight.bold)),
+            _userInfoRow('Info', 'Full result object contains ID Token,\nAccess Token & Refresh Token.'),
+          ] else
+            const Text('Session active (details pending fresh login)'),
+          const SizedBox(height: 40),
+          SizedBox(
+            width: double.infinity,
+            height: 50,
+            child: OutlinedButton.icon(
+              onPressed: _signOut,
+              icon: const Icon(Icons.logout),
+              label: const Text('Sign Out'),
+              style: OutlinedButton.styleFrom(
+                foregroundColor: Colors.red,
               ),
             ),
-          ],
-        ),
+          ),
+        ],
       ),
-      floatingActionButton: FloatingActionButton(
-        onPressed: () {
-          signIn();
-        },
-        tooltip: 'LOGIN',
-        child: const Icon(Icons.login),
-      ), // This trailing comma makes auto-formatting nicer for build methods.
+    );
+  }
+
+  Widget _userInfoRow(String label, String value) {
+    return Padding(
+      padding: const EdgeInsets.symmetric(vertical: 8.0),
+      child: Row(
+        crossAxisAlignment: CrossAxisAlignment.start,
+        children: [
+          SizedBox(
+            width: 80,
+            child: Text(
+              '$label:',
+              style: const TextStyle(fontWeight: FontWeight.bold),
+            ),
+          ),
+          Expanded(child: Text(value)),
+        ],
+      ),
     );
   }
 }

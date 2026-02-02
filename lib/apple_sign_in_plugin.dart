@@ -149,8 +149,8 @@ class AppleSignInPlugin {
     }
   }
 
-  /// Signs in the user with Apple and returns the [AuthorizationCredentialAppleID].
-  static Future<AuthorizationCredentialAppleID?> signInWithApple() async {
+  /// Signs in the user with Apple and returns the [AppleSignInResult].
+  static Future<AppleSignInResult?> signInWithApple() async {
     try {
       // First, check if there's an existing token and revoke it
       final isAppleLogin = _storage.read('isAppleLogin') ?? false;
@@ -184,22 +184,23 @@ class AppleSignInPlugin {
       _storage.write('refreshToken', tokens['refresh_token']);
       _storage.write('isAppleLogin', true);
 
-      if (credential.email != null) {
-        return credential;
-      } else if (credential.identityToken != null) {
+      String? email = credential.email;
+      if (email == null && credential.identityToken != null) {
         var decodedToken =
             JwtDecoder.decode(credential.identityToken.toString());
-        return AuthorizationCredentialAppleID(
-            userIdentifier: credential.userIdentifier,
-            givenName: credential.givenName ?? "",
-            familyName: credential.familyName ?? "",
-            authorizationCode: credential.authorizationCode,
-            email: decodedToken['email'] ?? "",
-            identityToken: credential.identityToken,
-            state: credential.state);
-      } else {
-        throw Exception('No email or identity token received from Apple');
+        email = decodedToken['email'];
       }
+
+      return AppleSignInResult(
+        idToken: credential.identityToken,
+        accessToken: tokens['access_token'],
+        refreshToken: tokens['refresh_token'],
+        authorizationCode: credential.authorizationCode,
+        userIdentifier: credential.userIdentifier,
+        givenName: credential.givenName,
+        familyName: credential.familyName,
+        email: email,
+      );
     } catch (error) {
       _log(content: 'Error during Apple Sign-In: $error', title: 'Error');
       return null;
@@ -245,6 +246,49 @@ class AppleSignInPlugin {
   /// Returns [true] if the user is signed in, [false] otherwise.
   static bool isSignedIn() {
     return _storage.read('isAppleLogin') ?? false;
+  }
+}
+
+/// A class containing all relevant data from a successful Apple Sign-In.
+class AppleSignInResult {
+  /// The JSON Web Token (JWT) that contains the user's identity information.
+  final String? idToken;
+
+  /// The access token used to authorize API requests.
+  final String? accessToken;
+
+  /// The refresh token used to obtain new access tokens.
+  final String? refreshToken;
+
+  /// The authorization code used to exchange for tokens.
+  final String? authorizationCode;
+
+  /// The unique identifier for the user.
+  final String? userIdentifier;
+
+  /// The user's given name (first name).
+  final String? givenName;
+
+  /// The user's family name (last name).
+  final String? familyName;
+
+  /// The user's email address.
+  final String? email;
+
+  AppleSignInResult({
+    this.idToken,
+    this.accessToken,
+    this.refreshToken,
+    this.authorizationCode,
+    this.userIdentifier,
+    this.givenName,
+    this.familyName,
+    this.email,
+  });
+
+  @override
+  String toString() {
+    return 'AppleSignInResult(userIdentifier: $userIdentifier, email: $email, givenName: $givenName, familyName: $familyName)';
   }
 }
 

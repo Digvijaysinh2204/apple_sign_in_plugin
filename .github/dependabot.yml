@@ -1,0 +1,8 @@
+# file: .github/dependabot.yml
+
+version: 2
+updates:
+  - package-ecosystem: "pub" # Check for Dart/Flutter packages
+    directory: "/" # Check the root directory for pubspec.yaml
+    schedule:
+      interval: "weekly" # Check for updates once a week
