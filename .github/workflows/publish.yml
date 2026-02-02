@@ -57,5 +57,8 @@ jobs:
         with:
           channel: 'stable'
 
+      # Required to retrieve the OIDC token from GitHub and configure pub.dev credentials
+      - uses: dart-lang/setup-dart@v1
+
       - name: 'Publish to pub.dev'
         run: flutter pub publish --force

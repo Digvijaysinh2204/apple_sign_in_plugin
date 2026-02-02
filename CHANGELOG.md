@@ -1,3 +1,6 @@
+## 1.1.4
+* Fix: Added `dart-lang/setup-dart` to CI to handle OIDC authentication for pub.dev
+
 ## 1.1.3
 * Final release with automated publishing configuration
 
