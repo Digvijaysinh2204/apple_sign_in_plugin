@@ -64,6 +64,12 @@ class AppleSignInPlugin {
         bundleId.isEmpty) {
       throw ArgumentError('All parameters must be non-empty strings');
     }
+    if (keyId.contains('YOUR_KEY_ID') ||
+        teamId.contains('YOUR_TEAM_ID') ||
+        bundleId.contains('YOUR_BUNDLE_ID')) {
+      throw ArgumentError(
+          '⚠️ PLACEHOLDER DETECTED: You must replace "YOUR_..." in main.dart with your actual Apple Developer credentials (Key ID, Team ID, Bundle ID).');
+    }
     _pemKeyPath = pemKeyPath;
     _keyId = keyId;
     _teamId = teamId;
@@ -146,12 +152,7 @@ class AppleSignInPlugin {
         return Map<String, dynamic>.from(responseData);
       } else {
         final errorBody = json.decode(response.body);
-        final errorMessage = errorBody['error'] ?? response.reasonPhrase;
-        _log(
-            content:
-                'Failed to get tokens: ${response.statusCode} - $errorMessage',
-            title: 'Error');
-        throw Exception('Failed to get tokens: $errorMessage');
+        _handleAppleError(errorBody, response.reasonPhrase);
       }
     } catch (e) {
       if (e is FormatException) {
@@ -159,6 +160,38 @@ class AppleSignInPlugin {
       }
       rethrow;
     }
+  }
+
+  /// **Handle Apple Error Response**
+  ///
+  /// Parses standard Apple error codes and throws a user-friendly exception.
+  static void _handleAppleError(Map<String, dynamic> errorBody, String? reasonPhrase) {
+    final errorCode = errorBody['error'] ?? 'unknown_error';
+    final errorDescription = errorBody['error_description'] ?? reasonPhrase;
+
+    String friendlyMessage = 'Failed to get tokens ($errorCode)';
+
+    if (errorCode == 'invalid_client') {
+      friendlyMessage =
+          'Apple Sign-In Error: Client Authentication Failed (invalid_client).\n'
+          'Possible Causes:\n'
+          '1. "Key ID" does not match the private key.\n'
+          '2. "Team ID" is incorrect.\n'
+          '3. "Bundle ID" does not match the Service ID in Apple Developer Console.\n'
+          '4. The ".pem" private key file is corrupted or incorrect.';
+    } else if (errorCode == 'invalid_grant') {
+      friendlyMessage =
+          'Apple Sign-In Error: Authorization Code Invalid (invalid_grant).\n'
+          'Cause: The authorization code has expired or has already been used.\n'
+          'Action: Please sign in again to generate a fresh code.';
+    } else if (errorCode == 'invalid_request') {
+      friendlyMessage =
+          'Apple Sign-In Error: Invalid Request (invalid_request).\n'
+          'Cause: One or more parameters in the token request are missing or incorrect.';
+    }
+
+    _log(content: '$friendlyMessage \nRaw Description: $errorDescription', title: 'Error');
+    throw Exception(friendlyMessage);
   }
 
   /// **Revoke Refresh Token**

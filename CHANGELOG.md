@@ -1,3 +1,11 @@
+## 1.2.4
+- **Refactor**: Cleaned up internal error handling logic for better readability.
+- **Improved**: Error messages are now professional, structured, and provide clear action items.
+
+## 1.2.3
+- **Feature**: Enhanced Error Handling. The plugin now parses Apple's error codes and suggests specific fixes (e.g., "Check your Team ID/Key ID" for `invalid_client`).
+- **Safety**: Added validation to prevent running with placeholder credentials.
+
 ## 1.2.2
 - **Fix**: Applied `dart format` to `example/lib/main.dart` to ensure clean git state during publishing.
 - **Maintenance**: Verified clean analysis and formatting for all files.
